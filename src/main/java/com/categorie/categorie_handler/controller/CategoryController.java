@@ -58,8 +58,7 @@ public class CategoryController {
 
         for (Category child : children) {
             setChildCategories(child, allCategories);
-        }
-    }
+        }}
 
     @GetMapping("/categories")
     public Page<Category> getCategories(@RequestParam(defaultValue = "0") int page,
