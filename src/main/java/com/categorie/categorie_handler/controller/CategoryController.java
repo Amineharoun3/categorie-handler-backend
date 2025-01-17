@@ -65,12 +65,7 @@ public class CategoryController {
                                         @RequestParam(defaultValue = "10") int size) {
         return categoryService.getCategories(PageRequest.of(page, size));
     }
-    @GetMapping("/categories/filter")
-    public List<Category> filterCategories(@RequestParam(required = false) Boolean isRoot,
-                                           @RequestParam(required = false) LocalDate afterDate,
-                                           @RequestParam(required = false) LocalDate beforeDate) {
-        return categoryService.filterCategories(isRoot, afterDate, beforeDate);
-    }
+
 
 
 
@@ -84,4 +79,18 @@ public class CategoryController {
     public void deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
     }
+
+@GetMapping("/search")
+public Page<Category> searchCategories(
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) Boolean isRoot,
+        @RequestParam(required = false) String afterDate,
+        @RequestParam(required = false) String beforeDate,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+) {
+    return categoryService.searchCategories(name, isRoot, afterDate, beforeDate, PageRequest.of(page, size));
+}
+
+
 }
