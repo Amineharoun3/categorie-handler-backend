@@ -29,7 +29,6 @@ public class CategoryService {
                     .orElseThrow(() -> new RuntimeException("Parent category not found"));
             category.setParentCategory(parent); // Associer le parent à la catégorie
         }
-
         // Vérifier et initialiser d'autres champs si nécessaire
         if (category.getCreatedDate() == null) {
             category.setCreatedDate(LocalDate.now());
@@ -47,9 +46,7 @@ public class CategoryService {
     public Page<Category> getCategories(Pageable pageable) {
         return categoryRepository.findAll(pageable);
     }
-
-   
-
+    
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id).orElse(null);
     }
