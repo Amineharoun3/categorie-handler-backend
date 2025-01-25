@@ -31,8 +31,7 @@ public class Category {
     @JsonManagedReference
     private List<Category> children;
 
-
-
+ 
     private LocalDate createdDate = LocalDate.now();
 
         // Getters et Setters
@@ -76,6 +75,9 @@ public class Category {
     public void setCreatedDate(LocalDate createdDate) {
         this.createdDate = createdDate;
     }
+
+
+
     }
 
 

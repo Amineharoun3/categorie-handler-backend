@@ -7,6 +7,10 @@ import com.categorie.categorie_handler.repository.CategoryRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.criteria.Predicate; // Critères pour les requêtes JPA
+import java.util.ArrayList; // Pour les listes dynamiques
+import java.util.List; // Pour les listes
+import org.springframework.data.jpa.domain.Specification; // Pour les spécifications JPA
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,7 +29,6 @@ public class CategoryService {
                     .orElseThrow(() -> new RuntimeException("Parent category not found"));
             category.setParentCategory(parent); // Associer le parent à la catégorie
         }
-
         // Vérifier et initialiser d'autres champs si nécessaire
         if (category.getCreatedDate() == null) {
             category.setCreatedDate(LocalDate.now());
@@ -43,12 +46,7 @@ public class CategoryService {
     public Page<Category> getCategories(Pageable pageable) {
         return categoryRepository.findAll(pageable);
     }
-
-    public List<Category> filterCategories(Boolean isRoot, LocalDate afterDate, LocalDate beforeDate) {
-        return categoryRepository.findCategoriesWithFilters(isRoot, afterDate, beforeDate);
-    }
-
-
+    
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id).orElse(null);
     }
@@ -110,4 +108,45 @@ public class CategoryService {
     public void deleteCategory(Long id) {
         categoryRepository.deleteById(id);
     }
+
+    private Category findRootCategory(Category category) {
+    while (category.getParentCategory() != null) {
+        category = category.getParentCategory();
+    }
+    return category;
+}
+
+
+public Page<Category> searchCategories(String name, Boolean isRoot, String afterDate, String beforeDate, Pageable pageable) {
+    LocalDate startDate = (afterDate != null) ? LocalDate.parse(afterDate) : null;
+    LocalDate endDate = (beforeDate != null) ? LocalDate.parse(beforeDate) : null;
+
+    return categoryRepository.findAll((root, query, criteriaBuilder) -> {
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (name != null && !name.isEmpty()) {
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
+        }
+
+        if (isRoot != null) {
+            if (isRoot) {
+                predicates.add(criteriaBuilder.isNull(root.get("parentCategory")));
+            } else {
+                predicates.add(criteriaBuilder.isNotNull(root.get("parentCategory")));
+            }
+        }
+
+        if (startDate != null) {
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), startDate));
+        }
+
+        if (endDate != null) {
+            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), endDate));
+        }
+
+        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+    }, pageable);
+}
+
+
 }
